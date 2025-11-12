@@ -10,15 +10,22 @@ public class StartupInfoLogger implements ApplicationListener<ApplicationReadyEv
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
+        // Ambil environment
         Environment env = event.getApplicationContext().getEnvironment();
 
+        // Ambil port dan context-path
         String port = env.getProperty("server.port", "8080");
+        
+        // --- INI BAGIAN YANG DIPERBAIKI ---
+        // Kita gunakan "/" sebagai nilai default, sesuai penjelasan sebelumnya.
         String contextPath = env.getProperty("server.servlet.context-path", "/");
-        if (contextPath == null) {
-            contextPath = "";
-        } else if (contextPath.equals("/")) {
+        
+        // Cek null sudah tidak perlu lagi karena ada nilai default.
+        // Kita hanya perlu mengubah "/" menjadi "" agar log URL lebih bersih.
+        if (contextPath.equals("/")) {
             contextPath = "";
         }
+        
 
         // Deteksi LiveReload dari DevTools
         boolean liveReloadEnabled = env.getProperty("spring.devtools.livereload.enabled", Boolean.class, false);
@@ -33,13 +40,16 @@ public class StartupInfoLogger implements ApplicationListener<ApplicationReadyEv
         String YELLOW = "\u001B[33m";
         String RESET = "\u001B[0m";
 
+        // Cetak log ke konsol
         System.out.println();
         System.out.println(GREEN + "Application started successfully!" + RESET);
         System.out.println(CYAN + "> URL: http://" + host + ":" + port + contextPath + RESET);
+        System.out.println();
         System.out.println(
                 liveReloadEnabled
                         ? (YELLOW + "> LiveReload: ENABLED (port " + liveReloadPort + ")" + RESET)
-                        : (YELLOW + "> LiveReload: DISABLED" + RESET));
+                        : (YELLOW + "> LiveReload: DISABLED" + RESET)
+        );
         System.out.println();
     }
 }

@@ -1,44 +1,133 @@
-## Global Variables
-@BaseUrl = http://localhost:8080/api
+@RestController
+@RequestMapping("/api/cash-flows")
+public class CashFlowController {
 
-## Todos
-## ---------------------------------
-# @name PostTodo
-POST {{BaseUrl}}/todos
-Content-Type: application/json
+    private final CashFlowService service;
 
-{
-    "title": "Belajar PBO",
-    "description": "Mempelajari dasar-dasar PBO untuk pengembangan aplikasi web."
+    public CashFlowController(CashFlowService service) {
+        this.service = service;
+    }
+
+    @PostMapping
+    public Map<String, Object> createCashFlow(@RequestBody CashFlow cashFlow) {
+        if (cashFlow.getType() == null || cashFlow.getType().isBlank() ||
+            cashFlow.getSource() == null || cashFlow.getSource().isBlank() ||
+            cashFlow.getLabel() == null || cashFlow.getLabel().isBlank() ||
+            cashFlow.getAmount() == null || cashFlow.getAmount() <= 0 ||
+            cashFlow.getDescription() == null || cashFlow.getDescription().isBlank()) {
+
+            return Map.of(
+                "status", "fail",
+                "message", "Data tidak valid",
+                "data", null
+            );
+        }
+
+        CashFlow created = service.createCashFlow(
+            cashFlow.getType(),
+            cashFlow.getSource(),
+            cashFlow.getLabel(),
+            cashFlow.getAmount(),
+            cashFlow.getDescription()
+        );
+
+        return Map.of(
+            "status", "success",
+            "message", "Berhasil menambahkan data",
+            "data", Map.of("id", created.getId())
+        );
+    }
+
+    @GetMapping
+    public Map<String, Object> getAllCashFlows(@RequestParam(required = false) String search) {
+        List<CashFlow> cashFlows = service.getAllCashFlows(search);
+        return Map.of(
+            "status", "success",
+            "message", "Berhasil mengambil data",
+            "data", Map.of("cash_flows", cashFlows)
+        );
+    }
+
+    @GetMapping("/{id}")
+    public Map<String, Object> getCashFlowById(@PathVariable UUID id) {
+        CashFlow cashFlow = service.getCashFlowById(id);
+        if (cashFlow == null) {
+            return Map.of(
+                "status", "fail",
+                "message", "Data tidak ditemukan",
+                "data", null
+            );
+        }
+        return Map.of(
+            "status", "success",
+            "message", "Berhasil mengambil data",
+            "data", Map.of("cash_flow", cashFlow)
+        );
+    }
+
+    @GetMapping("/labels")
+    public Map<String, Object> getCashFlowLabels() {
+        List<String> labels = service.getCashFlowLabels();
+        return Map.of(
+            "status", "success",
+            "message", "Berhasil mengambil data",
+            "data", Map.of("labels", labels)
+        );
+    }
+
+    @PutMapping("/{id}")
+    public Map<String, Object> updateCashFlow(@PathVariable UUID id, @RequestBody CashFlow cashFlow) {
+        if (cashFlow.getType() == null || cashFlow.getType().isBlank() ||
+            cashFlow.getSource() == null || cashFlow.getSource().isBlank() ||
+            cashFlow.getLabel() == null || cashFlow.getLabel().isBlank() ||
+            cashFlow.getAmount() == null || cashFlow.getAmount() <= 0 ||
+            cashFlow.getDescription() == null || cashFlow.getDescription().isBlank()) {
+
+            return Map.of(
+                "status", "fail",
+                "message", "Data tidak valid",
+                "data", null
+            );
+        }
+
+        CashFlow updated = service.updateCashFlow(
+            id,
+            cashFlow.getType(),
+            cashFlow.getSource(),
+            cashFlow.getLabel(),
+            cashFlow.getAmount(),
+            cashFlow.getDescription()
+        );
+
+        if (updated == null) {
+            return Map.of(
+                "status", "fail",
+                "message", "Data tidak ditemukan",
+                "data", null
+            );
+        }
+
+        return Map.of(
+            "status", "success",
+            "message", "Berhasil memperbarui data",
+            "data", Map.of("cash_flow", updated)
+        );
+    }
+
+    @DeleteMapping("/{id}")
+    public Map<String, Object> deleteCashFlow(@PathVariable UUID id) {
+        boolean deleted = service.deleteCashFlow(id);
+        if (!deleted) {
+            return Map.of(
+                "status", "fail",
+                "message", "Data tidak ditemukan",
+                "data", null
+            );
+        }
+        return Map.of(
+            "status", "success",
+            "message", "Berhasil menghapus data",
+            "data", null
+        );
+    }
 }
-###
-
-# @name GetAllTodos
-GET {{BaseUrl}}/todos
-###
-
-# @name GetAllTodosWithSearch
-GET {{BaseUrl}}/todos?search=PBO
-###
-
-## Mengambil ID Todo pertama dari response GetAllTodos
-@todoId = {{GetAllTodos.response.body.data.todos[0].id}}
-
-# @name GetTodoById
-GET {{BaseUrl}}/todos/{{todoId}}
-###
-
-# @name PutTodoById
-PUT {{BaseUrl}}/todos/{{todoId}}
-Content-Type: application/json
-
-{
-    "title": "Belajar Spring Boot Lanjutan",
-    "description": "Mempelajari fitur-fitur lanjutan Spring Boot.",
-    "isFinished": true
-}
-###
-
-# @name DeleteTodoById
-DELETE {{BaseUrl}}/todos/{{todoId}}
-###

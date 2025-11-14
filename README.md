@@ -10,6 +10,9 @@
 
 - Melakukan inisialisasi proyek
 
+### 14-11-2025
+- Menambahkan file pengujian test untuk cashflow
+- menambahkan file main untuk cashflow 
 
 ## Syntax
 
